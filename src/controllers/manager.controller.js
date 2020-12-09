@@ -5,7 +5,8 @@ const uuid = require('uuid')
 let managerConnection = []
 
 export function isLogin(req,res,next){
-    if(!req.session.userId){
+    console.log(req.session)
+    if(req.session.userId==undefined){
         res.send("Unauthenticated")
     }
     else{
@@ -21,29 +22,37 @@ export async function login(req,res,next){
         ...managerConnection,
         connection
     ]
-    connection.connect(function(err){
-            if(err) {
-                res.send(err)
-                console.log(err)
+    if(req.session.userId != undefined)
+    {
+        res.send("Login yet")
+    }
+    else{
+        connection.connect(function(err){
+                if(err) {
+                    res.send(err)
+                    console.log(err)
 
-                next()
+                    next()
+                }
+                else{
+                    // req.session.isLogin = true
+                    req.session.userId = managerConnection.length - 1
+                    res.send({message: "success",status:200})
+                    next()
+                }
             }
-            else{
-                req.session.isLogin = true
-                req.session.userId = managerConnection.length - 1
-                res.send({message: "success",status:200})
-                next()
-            }
-        }
-    )
+        )
+    }
 }
 
 export async function logout(req,res,next){
+    let userID = req.session.userId
+    
     req.session.destroy(err=>{
         if(err){
             return res.send({message:"Err at destroying session"})
         }
-        managerConnection[req.session.userId].end()
+        managerConnection[userID].end()
         console.log("Close database connection")
         res.clearCookie("sid")
         res.send({message:"Logout Success",status:200})
