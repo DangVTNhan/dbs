@@ -24,8 +24,8 @@ export async function login(req,res,next){
                 next()
             }
             else{
-                
-                res.send("success")
+                req.session.isLogin = true
+                res.send({message: "success",status:200})
                 next()
             }
         }
@@ -33,7 +33,16 @@ export async function login(req,res,next){
 }
 
 export async function logout(req,res,next){
-
+    req.session.destroy(err=>{
+        if(err){
+            return res.send({message:"Err at destroying session"})
+        }
+        managerConnection.end()
+        console.log("Close database connection")
+        res.clearCookie("sid")
+        res.send({message:"Logout Success",status:200})
+        next()
+    })
 }
 export async function searchMaterialInformation(req,res,next){
 
