@@ -18,11 +18,11 @@ const mysql = require("mysql")
 export function loginDB(username,password){
     try{
         let myConnection = mysql.createConnection({
-        host:'localhost',
+        host:'4.tcp.ngrok.io',
         user: username,
         password:password,
-        database: 'dbs',
-        port: "1224",
+        database: 'dbs_assignment2',
+        port: "15004",
         })
         return myConnection
     }catch(err){

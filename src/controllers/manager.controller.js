@@ -1,11 +1,11 @@
 const db = require('../db')
 const index = require('../index')
 const app = require('../app')
-let managerConnection = null
-
+const uuid = require('uuid')
+let managerConnection = []
 
 export function isLogin(req,res,next){
-    if(!req.session.isLogin){
+    if(!req.session.userId){
         res.send("Unauthenticated")
     }
     else{
@@ -16,15 +16,21 @@ export function isLogin(req,res,next){
 export async function login(req,res,next){
     let username = req.body.username
     let password = req.body.password
-
-    managerConnection =  db.loginDB(username,password)
-    managerConnection.connect(function(err){
+    let connection =  db.loginDB(username,password)
+    managerConnection =  [
+        ...managerConnection,
+        connection
+    ]
+    connection.connect(function(err){
             if(err) {
                 res.send(err)
+                console.log(err)
+
                 next()
             }
             else{
                 req.session.isLogin = true
+                req.session.userId = managerConnection.length - 1
                 res.send({message: "success",status:200})
                 next()
             }
@@ -37,7 +43,7 @@ export async function logout(req,res,next){
         if(err){
             return res.send({message:"Err at destroying session"})
         }
-        managerConnection.end()
+        managerConnection[req.session.userId].end()
         console.log("Close database connection")
         res.clearCookie("sid")
         res.send({message:"Logout Success",status:200})
@@ -52,3 +58,20 @@ export async function getSupplierCategories(req,res,next){
 }
 export async function addSuppier(req,res,next){}
 export async function makeReport(req,res,next){}
+
+export async function getAllSupplier(req,res,next){
+    let sql = `SELECT * from get_all_supplier`;
+    managerConnection[req.session.userId].query(sql, function(err, data, fields) {
+      if (err) {
+        console.log(err)
+      };
+      data = JSON.stringify(data);
+      data =  JSON.parse(data);
+      data = uuid.stringify(data[0].scode.data)
+      res.json({
+        status: 200,
+        data,
+        message: "User lists retrieved successfully"
+      })
+    })
+}
