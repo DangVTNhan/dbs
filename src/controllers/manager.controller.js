@@ -2,7 +2,6 @@ const db = require('../db')
 const index = require('../index')
 const app = require('../app')
 const uuid = require('uuid')
-import { stringify as uuidStringify } from 'uuid';
 let managerConnection = []
 
 export function isLogin(req,res,next){
@@ -14,6 +13,8 @@ export function isLogin(req,res,next){
     }
 }
 // Procedure
+
+// Bat buoc
 export async function login(req,res,next){
     try{
         let username = req.body.username
@@ -109,21 +110,68 @@ export async function makeReport(req,res,next){
             res.status(400).send(err)
         }
         else{
-        res.status(200).send("success")
+        res.status(200).send({message:"Success", data: rows})
         }
     })
     }
     catch(err){
-
+        res.status(400).send(err)
     }
 }
-export async function getBoltOfFabric(req,res,next){}
-export async function getImportOfSupplier(req,res,next){}
-export async function getFabricOfSupplier(req,res,next){}
-export async function getPriceOfFabric(req,res,next){}
+
+
+// Optioal
+export async function getBoltOfFabric(req,res,next){
+    let fabircId = req.body.fabircId;
+    try{
+        managerConnection[req.session.userId].query('CALL get_bolt_of_fabric(?)',[fabircId],(err,rows,fields)=>{
+            if(err)
+                res.status(400).send(err)
+            else{
+                res.status(200).send({message:"Success", data: rows})
+            }
+        })
+    }catch(err){
+        res.status(400).send(err)
+    }
+}
+export async function getImportOfSupplier(req,res,next){
+    let supplierId = req.body.supplierId
+    try{
+        managerConnection[req.session.userId].query('CALL get_import_of_supplier(?)',[supplierId],(err,rows,fields)=>{
+            if(err)
+                res.status(400).send(err)
+            else{
+                res.status(200).send({message:"Success", data: rows})
+            }
+        })
+    }catch(err){
+        res.status(400).send(err)
+    }
+}
+export async function getFabricOfSupplier(req,res,next){
+    
+}
+export async function getPriceOfFabric(req,res,next){
+    let fabricId = req.body.fabricId
+    try{
+        managerConnection[req.session.userId].query('CALL get_price_of_fabric(?)',[fabricId],(err,rows,fields)=>{
+            if(err)
+                res.status(400).send(err)
+            else{
+                res.status(200).send({message:"Success", data: rows})
+            }
+        })
+    }catch(err){
+        res.status(400).send(err)
+    }
+}
 export async function getPhoneOfSupplier(req,res,next){}
 
-
+export async function addFabric(req,res,next){}
+export async function addFabricPrice(req,res,next){}
+export async function addEmployee(req,res,next){}
+export async function addCustomer(req,res,next){}
 
 // View
 export async function getAllSupplier(req,res,next){
