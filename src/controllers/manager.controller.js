@@ -2,69 +2,69 @@ const db = require('../db')
 const index = require('../index')
 const app = require('../app')
 const uuid = require('uuid')
-let managerConnection = []
+const jwt = require('jsonwebtoken')
+let connections = [];
 
-export function isLogin(req,res,next){
-    if(req.session.userId==undefined){
-        res.send("Unauthenticated")
-    }
-    else{
-        next()
-    }
-}
-// Procedure
 
+const tokenSecret = "dbs"
 // Bat buoc
+export function authenticateToken(req,res,next){
+    const authHeader = req.headers['authorization']
+    const token = authHeader && authHeader.split(' ')[1]
+    if (token == null) return res.status(400).send({message:"Null token"})
+
+    jwt.verify(token, tokenSecret , (err, user) => {
+        if (err) return res.status(400).send({message:"Invalid token"})
+        req.user = user
+        next() // pass the execution off to whatever request the client intended
+  })
+}
+export  function generateAccessToken(tokenPayload){
+    return jwt.sign(tokenPayload,tokenSecret, { expiresIn: '18000s' })
+}
+
+// Procedure
 export async function login(req,res,next){
     try{
         let username = req.body.username
         let password = req.body.password
         let connection =  db.loginDB(username,password)
-        managerConnection.push(connection)
-        if(req.session.userId != undefined)
-        {
-            res.send("Login yet")
-        }
-        else{
-            connection.connect(function(err){
-                    if(err) {
-                        res.send(err)
+        connection.connect(function(err){
+                if(err) {
+                        res.status(400).send(err)
                         console.log(err)
-
                         next()
-                    }
-                    else{
-                        // req.session.isLogin = true
-                        req.session.userId = managerConnection.length - 1
-                        res.send({message: "success",status:200})
-                        next()
-                    }
                 }
-            )
-        }
+                else{
+                    connections.push(connection)
+                    let userid = connections.length - 1
+                    let accessToken =  generateAccessToken({username: username,userid: userid})
+                    res.status(200).send({message: "success", accessToken: accessToken})
+                    next()
+                }
+            }
+        )
     }
     catch(err){
         res.status(400).send(err)
     }
 }
 export async function logout(req,res,next){
-    let userID = req.session.userId
-    req.session.destroy(err=>{
-        if(err){
-            return res.send({message:"Err at destroying session"})
-        }
-        managerConnection[userID].end()
-        managerConnection.splice(userID,1)
-        console.log("Close database connection of: " + userID)
-        res.clearCookie("sid")
-        res.send({message:"Logout Success",status:200})
+    try{
+        console.log("Close database connection of: " + req.user.userid)
+        res.status(200).send({message:"Logout Success"})
         next()
-    })
+    }
+    catch(err){ 
+        res.status(400).send(err)
+    }
+    
 }
+
 export async function searchMaterialInformation(req,res,next){
     let fabricCode = req.body.fabricCode;
     try{
-        managerConnection[req.session.userId].query('CALL search_info(?)',[fabricCode],(err,rows,fields)=>{
+        connections[req.user.userid].query('CALL search_info(?)',[fabricCode],(err,rows,fields)=>{
             if(err)
                 res.status(400).send(err)
             else
@@ -78,7 +78,7 @@ export async function searchMaterialInformation(req,res,next){
 export async function getSupplierCategories(req,res,next){
     let supplierId = req.body.supplierId;
     try{
-         managerConnection[req.session.userId].query('CALL list_category_by_supplier(?)',[supplierId],(err,rows,fields)=>{
+         connections[req.user.userid].query('CALL list_category_by_supplier(?)',[supplierId],(err,rows,fields)=>{
             if(err)
                 res.status(400).send(err)
             else
@@ -91,8 +91,8 @@ export async function getSupplierCategories(req,res,next){
 }
 export async function addSuppier(req,res,next){
     let {tax,bank,addr,sname,phone} = req.body;
-    let userId = req.session.userId;
-    managerConnection[userId].query('CALL add_supplier(?,?,?,?,?)',[tax,bank,addr,sname,phone],(err,rows,fields)=>{
+    let userId = req.user.userid;
+    connections[userId].query('CALL add_supplier(?,?,?,?,?)',[tax,bank,addr,sname,phone],(err,rows,fields)=>{
         if(err){
             res.status(400).send(err)
         }
@@ -105,12 +105,12 @@ export async function addSuppier(req,res,next){
 export async function makeReport(req,res,next){
     let customerCode = req.body.customerCode
     try{
-        managerConnection[req.session.userId].query('CALL order_info(?)',[customerCode],(err,rows,fields)=>{
+        connections[req.user.userid].query('CALL order_info(?)',[customerCode],(err,rows,fields)=>{
         if(err){
             res.status(400).send(err)
         }
         else{
-        res.status(200).send({message:"Success", data: rows})
+            res.status(200).send({message:"Success", data: rows})
         }
     })
     }
@@ -119,8 +119,7 @@ export async function makeReport(req,res,next){
     }
 }
 
-
-// Optioal
+// Khong bat buoc
 export async function getBoltOfFabric(req,res,next){
     let fabircId = req.body.fabircId;
     try{
@@ -177,15 +176,13 @@ export async function addCustomer(req,res,next){}
 export async function getAllSupplier(req,res,next){
     try{
         let sql = `SELECT * from get_all_supplier`;
-        managerConnection[req.session.userId].query(sql, function(err, data, fields) {
+        connections[req.user.userid].query(sql, function(err, data, fields) {
         if (err) {
             console.log(err)
         };
-
-        res.json({
-            status: 200,
+        console.log(req.session)
+        res.status(200).json({
             data,
-            message: "User lists retrieved successfully"
         })
         })
     }

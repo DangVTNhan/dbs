@@ -14,16 +14,16 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.disable("x-powered-by");
-app.use(cors());
+app.use(cors({ credentials: true}));
 app.use(morgan("combined"));
 app.use(session({
     name: "sid",
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
     secret: "dbs",
     cookie:{
         maxAge: 1000 * 60 * 60 * 24,
-        // sameSite:true 
+
     }
 }))
 
