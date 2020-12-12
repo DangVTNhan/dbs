@@ -16,6 +16,7 @@ export function authenticateToken(req,res,next){
     jwt.verify(token, tokenSecret , (err, user) => {
         if (err) return res.status(400).send({message:"Invalid token"})
         req.user = user
+        
         next() // pass the execution off to whatever request the client intended
   })
 }
@@ -68,21 +69,25 @@ export async function searchMaterialInformation(req,res,next){
             if(err)
                 res.status(400).send(err)
             else
-                res.status(200).send({message: "Success",data: rows})
+                res.status(200).send({message: "Success", rows})
         })
     }catch(err){
         res.status(400).send(err)
         next()
     }
 }
+
 export async function getSupplierCategories(req,res,next){
-    let supplierId = req.body.supplierId;
+    console.log(req.body)
+    let supplierId = req.body.supplierId; 
     try{
-         connections[req.user.userid].query('CALL list_category_by_supplier(?)',[supplierId],(err,rows,fields)=>{
+         connections[req.user.userid].query('CALL get_fabric_of_suppier(?)',[supplierId],(err,rows,fields)=>{
             if(err)
                 res.status(400).send(err)
-            else
-                res.status(200).send({message: "Success",data: rows})
+            else{
+                let data = rows[0]
+                res.status(200).send(data)
+            }
         })
     }catch(err){
         res.status(400).send(err)
@@ -110,7 +115,7 @@ export async function makeReport(req,res,next){
             res.status(400).send(err)
         }
         else{
-            res.status(200).send({message:"Success", data: rows})
+            res.status(200).send({message:"Success", rows})
         }
     })
     }
@@ -123,7 +128,7 @@ export async function makeReport(req,res,next){
 export async function getBoltOfFabric(req,res,next){
     let fabircId = req.body.fabircId;
     try{
-        managerConnection[req.session.userId].query('CALL get_bolt_of_fabric(?)',[fabircId],(err,rows,fields)=>{
+        connections[req.user.userid].query('CALL get_bolt_of_fabric(?)',[fabircId],(err,rows,fields)=>{
             if(err)
                 res.status(400).send(err)
             else{
@@ -137,7 +142,7 @@ export async function getBoltOfFabric(req,res,next){
 export async function getImportOfSupplier(req,res,next){
     let supplierId = req.body.supplierId
     try{
-        managerConnection[req.session.userId].query('CALL get_import_of_supplier(?)',[supplierId],(err,rows,fields)=>{
+        connections[req.user.userid].query('CALL get_import_of_supplier(?)',[supplierId],(err,rows,fields)=>{
             if(err)
                 res.status(400).send(err)
             else{
@@ -154,36 +159,33 @@ export async function getFabricOfSupplier(req,res,next){
 export async function getPriceOfFabric(req,res,next){
     let fabricId = req.body.fabricId
     try{
-        managerConnection[req.session.userId].query('CALL get_price_of_fabric(?)',[fabricId],(err,rows,fields)=>{
+        connections[req.user.userid].query('CALL get_price_of_fabric(?)',[fabricId],(err,rows,fields)=>{
             if(err)
                 res.status(400).send(err)
             else{
-                res.status(200).send({message:"Success", data: rows})
+                res.status(200).send({message:"Success", rows})
             }
         })
     }catch(err){
         res.status(400).send(err)
     }
 }
-export async function getPhoneOfSupplier(req,res,next){}
 
+
+export async function getPhoneOfSupplier(req,res,next){}
 export async function addFabric(req,res,next){}
 export async function addFabricPrice(req,res,next){}
 export async function addEmployee(req,res,next){}
 export async function addCustomer(req,res,next){}
-
 // View
 export async function getAllSupplier(req,res,next){
     try{
         let sql = `SELECT * from get_all_supplier`;
-        connections[req.user.userid].query(sql, function(err, data, fields) {
+        connections[req.user.userid].query(sql, function(err, rows, fields) {
         if (err) {
             console.log(err)
-        };
-        console.log(req.session)
-        res.status(200).json({
-            data,
-        })
+        }
+        res.status(200).send(rows)
         })
     }
     catch(err){
