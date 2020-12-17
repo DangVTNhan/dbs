@@ -52,6 +52,7 @@ export async function login(req,res,next){
 }
 export async function logout(req,res,next){
     try{
+        // fixxxx
         console.log("Close database connection of: " + req.user.userid)
         res.status(200).send({message:"Logout Success"})
         next()
@@ -95,9 +96,9 @@ export async function getSupplierCategories(req,res,next){
     }
 }
 export async function addSuppier(req,res,next){
-    let {tax,bank,addr,sname,phone} = req.body;
+    let {tax,bank,addr,sname} = req.body;
     let userId = req.user.userid;
-    connections[userId].query('CALL add_supplier(?,?,?,?,?)',[tax,bank,addr,sname,phone],(err,rows,fields)=>{
+    connections[userId].query('CALL add_supplier(?,?,?,?)',[tax,bank,addr,sname],(err,rows,fields)=>{
         if(err){
             res.status(400).send(err)
         }
@@ -193,11 +194,83 @@ export async function getAllSupplier(req,res,next){
     }
 }
 
-export async function getAllFabric(req,res,next){}
-export async function getAllImport(req,res,next){}
-export async function getAllOrdering(req,res,next){}
-export async function getAllBolt(req,res,next){}
-export async function getAllCustomer(req,res,next){}
-export async function getAllEmployee(req,res,next){}
+export async function getAllFabric(req,res,next){
+    let sql = `SELECT * from get_all_fabric`;
+    try{
+        connections[req.user.userid].query(sql, function(err, rows, fields) {
+        if (err) {
+            console.log(err)
+        }
+        res.status(200).send(rows)
+        })
+    }catch(err){
+        res.status(400).send(err)
+    }
+}
+export async function getAllImport(req,res,next){
+    let sql = `SELECT * from get_all_import`;
+    try{
+        connections[req.user.userid].query(sql, function(err, rows, fields) {
+        if (err) {
+            console.log(err)
+        }
+        res.status(200).send(rows)
+        })
+    }catch(err){
+        res.status(400).send(err)
+    }
+}
+export async function getAllOrdering(req,res,next){
+    let sql = `SELECT * from get_all_ordering`;
+    try{
+        connections[req.user.userid].query(sql, function(err, rows, fields) {
+        if (err) {
+            console.log(err)
+        }
+        res.status(200).send(rows)
+        })
+    }catch(err){
+        res.status(400).send(err)
+    }
+}
+export async function getAllBolt(req,res,next){
+    let sql = `SELECT * from get_all_bolt`;
+    try{
+        connections[req.user.userid].query(sql, function(err, rows, fields) {
+        if (err) {
+            console.log(err)
+        }
+        res.status(200).send(rows)
+        })
+    }catch(err){
+        res.status(400).send(err)
+    }
+}
+export async function getAllCustomer(req,res,next){
+    let sql = `SELECT * from get_all_customer`;
+    try{
+        connections[req.user.userid].query(sql, function(err, rows, fields) {
+        if (err) {
+            console.log(err)
+        }
+        res.status(200).send(rows)
+        })
+    }catch(err){
+        res.status(400).send(err)
+    }
+}
+export async function getAllEmployee(req,res,next){
+    let sql = `SELECT * from get_all_employee`;
+    try{
+        connections[req.user.userid].query(sql, function(err, rows, fields) {
+        if (err) {
+            console.log(err)
+        }
+        res.status(200).send(rows)
+        })
+    }catch(err){
+        res.status(400).send(err)
+    }
+}
 
 
