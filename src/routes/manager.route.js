@@ -7,6 +7,11 @@ router.post('/searchMaterial',managerController.authenticateToken,managerControl
 router.post('/supplierCategories',managerController.authenticateToken,managerController.getSupplierCategories)
 router.post('/makeReport',managerController.authenticateToken,managerController.makeReport)
 router.post('/supplier',managerController.authenticateToken,managerController.addSuppier)
+router.post('/getPhoneOfSupplier',managerController.authenticateToken,managerController.getPhoneOfSupplier)
+router.post('/addFabricPrice',managerController.authenticateToken,managerController.addFabricPrice)
+router.post('/addFabric',managerController.authenticateToken,managerController.addFabric)
+router.post('/addEmployee',managerController.authenticateToken,managerController.addEmployee)
+router.post('/addCustomer',managerController.authenticateToken,managerController.addCustomer)
 
 router.get('/supplier',managerController.authenticateToken,managerController.getAllSupplier)
 router.get('/fabric',managerController.authenticateToken,managerController.getAllFabric)

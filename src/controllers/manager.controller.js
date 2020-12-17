@@ -79,7 +79,6 @@ export async function searchMaterialInformation(req,res,next){
 }
 
 export async function getSupplierCategories(req,res,next){
-    console.log(req.body)
     let supplierId = req.body.supplierId; 
     try{
          connections[req.user.userid].query('CALL get_fabric_of_suppier(?)',[supplierId],(err,rows,fields)=>{
@@ -111,7 +110,7 @@ export async function addSuppier(req,res,next){
 export async function makeReport(req,res,next){
     let customerCode = req.body.customerCode
     try{
-        connections[req.user.userid].query('CALL order_info(?)',[customerCode],(err,rows,fields)=>{
+        connections[req.user.userid].query('CALL make_customer_report(?)',[customerCode],(err,rows,fields)=>{
         if(err){
             res.status(400).send(err)
         }
@@ -172,12 +171,75 @@ export async function getPriceOfFabric(req,res,next){
     }
 }
 
+export async function getPhoneOfSupplier(req,res,next){
+    let supplierId = req.body.supplierId;
+    try{
+        connections[req.user.userid].query('CALL get_phone_of_supplier(?)',[supplierId],(err,rows,fields)=>{
+            if(err)
+                res.status(400).send(err)
+            else{
+                res.status(200).send({message:"Success", rows})
+            }
+        })
+    }catch(err){
+        res.status(400).send(err)
+    }
+}
 
-export async function getPhoneOfSupplier(req,res,next){}
-export async function addFabric(req,res,next){}
-export async function addFabricPrice(req,res,next){}
-export async function addEmployee(req,res,next){}
-export async function addCustomer(req,res,next){}
+export async function addFabric(req,res,next){
+    let {fName,color,sCode} = req.body;
+    connections[req.user.userid].query('CALL add_fabric(?,?,?)',[fName,color,sCode],(err,rows,fields)=>{
+        if(err){
+            res.status(400).send(err)
+        }
+        else{
+        res.status(200).send("success")
+        }
+    })
+}
+export async function addFabricPrice(req,res,next){
+    let {id,fCode,price} = req.body;
+    let dateObj = new Date();
+    let month = dateObj.getUTCMonth() + 1;
+    let day = dateObj.getUTCDate();
+    let year = dateObj.getUTCFullYear();
+
+    var creatAt = year+"-"+month+"-"+day
+    console.log(creatAt)
+    connections[req.user.userid].query('CALL add_fabric_price(?,?,?,?)',[id,fCode,price,creatAt],(err,rows,fields)=>{
+        if(err){
+            res.status(400).send(err)
+        }
+        else{
+        res.status(200).send("success")
+        }
+    })
+}
+export async function addEmployee(req,res,next){
+    let {phoneNumber,address,gender,fName,lName} = req.body;
+    connections[req.user.userid].query('CALL add_employee(?,?,?,?,?)',[phoneNumber,address,gender,fName,lName],(err,rows,fields)=>{
+        if(err){
+            res.status(400).send(err)
+        }
+        else{
+        res.status(200).send("success")
+        }
+    })
+}
+export async function addCustomer(req,res,next){
+    let {arrearage,address,fname,lname} = req.body;
+    connections[req.user.userid].query('CALL add_customer(?,?,?,?)',[arrearage,address,fname,lname],(err,rows,fields)=>{
+        if(err){
+            res.status(400).send(err)
+        }
+        else{
+        res.status(200).send("success")
+        }
+    })
+}
+
+
+
 // View
 export async function getAllSupplier(req,res,next){
     try{
