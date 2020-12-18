@@ -12,6 +12,10 @@ router.post('/addFabricPrice',managerController.authenticateToken,managerControl
 router.post('/addFabric',managerController.authenticateToken,managerController.addFabric)
 router.post('/addEmployee',managerController.authenticateToken,managerController.addEmployee)
 router.post('/addCustomer',managerController.authenticateToken,managerController.addCustomer)
+router.post('/addFabricImport',managerController.authenticateToken,managerController.addFabricImport)
+router.post('/addCustomerPhone',managerController.authenticateToken,managerController.addCustomerPhone)
+router.post('/addBolt',managerController.authenticateToken,managerController.addBolt)
+
 
 router.get('/supplier',managerController.authenticateToken,managerController.getAllSupplier)
 router.get('/fabric',managerController.authenticateToken,managerController.getAllFabric)
